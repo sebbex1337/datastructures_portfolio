@@ -1,20 +1,32 @@
 export default class Grid {
-  constructor(rows, cols) {
+  constructor(rowOrObj, cols) {
+    const { row: rows, col: columns } = this.parseRowCol(rowOrObj, cols);
     this.rows = rows;
-    this.cols = cols;
-    this.grid = Array.from({ length: rows }, () => Array(cols).fill(null));
+    this.cols = columns;
+    this.grid = Array.from({ length: rows }, () => Array(columns).fill(null));
   }
 
-  set(row, col, value) {
-    this.grid[row][col] = value;
+  parseRowCol(rowOrObj, col) {
+    if (typeof rowOrObj === "object") {
+      return { row: rowOrObj.row, col: rowOrObj.col };
+    }
+    return { row: rowOrObj, col };
   }
 
-  get(row, col) {
-    return this.grid[row][col];
+  set(rowOrObj, colOrValue, value) {
+    const { row, col } = this.parseRowCol(rowOrObj, colOrValue);
+    const val = value !== undefined ? value : colOrValue;
+    this.grid[row][col] = val;
   }
 
-  indexFor(row, col) {
-    return row * this.cols + col;
+  get(rowOrObj, col) {
+    const { row, col: column } = this.parseRowCol(rowOrObj, col);
+    return this.grid[row][column];
+  }
+
+  indexFor(rowOrObj, col) {
+    const { row, col: column } = this.parseRowCol(rowOrObj, col);
+    return row * this.cols + column;
   }
 
   rowColFor(index) {
@@ -23,65 +35,73 @@ export default class Grid {
     return { row, col };
   }
 
-  neighbours(row, col) {
+  neighbours(rowOrObj, col) {
+    const { row, col: column } = this.parseRowCol(rowOrObj, col);
     const neighbours = [];
     if (row > 0) {
-      neighbours.push({ row: row - 1, col }); // Check up
+      neighbours.push({ row: row - 1, column }); // Check up
     }
     if (row < this.rows - 1) {
-      neighbours.push({ row: row + 1, col }); // Check Down
+      neighbours.push({ row: row + 1, column }); // Check Down
     }
-    if (col > 0) {
-      neighbours.push({ row, col: col - 1 }); // Check Left
+    if (column > 0) {
+      neighbours.push({ row, col: column - 1 }); // Check Left
     }
-    if (col < this.cols - 1) {
-      neighbours.push({ row, col: col + 1 }); // Check Right
+    if (column < this.cols - 1) {
+      neighbours.push({ row, col: column + 1 }); // Check Right
     }
     return neighbours;
   }
 
-  neighbourValues(row, col) {
-    return this.neighbours(row, col).map(({ row, col }) => this.get(row, col));
+  neighbourValues(rowOrObj, col) {
+    const { row, col: column } = this.parseRowCol(rowOrObj, col);
+    return this.neighbours(row, column).map(({ row, col }) => this.get(row, col));
   }
 
-  nextInRow(row, col) {
-    if (col < this.cols - 1) {
-      return { row, col: col + 1 };
+  nextInRow(rowOrObj, col) {
+    const { row, col: column } = this.parseRowCol(rowOrObj, col);
+    if (column < this.cols - 1) {
+      return { row, col: column + 1 };
     }
     return undefined;
   }
 
-  nextInCol(row, col) {
+  nextInCol(rowOrObj, col) {
+    const { row, col: column } = this.parseRowCol(rowOrObj, col);
     if (row < this.rows - 1) {
-      return { row: row + 1, col };
+      return { row: row + 1, column };
     }
     return undefined;
   }
 
-  north(row, col) {
+  north(rowOrObj, col) {
+    const { row, col: column } = this.parseRowCol(rowOrObj, col);
     if (row > 0) {
-      return { row: row - 1, col };
+      return { row: row - 1, column };
     }
     return undefined;
   }
 
-  south(row, col) {
+  south(rowOrObj, col) {
+    const { row, col: column } = this.parseRowCol(rowOrObj, col);
     if (row < this.rows - 1) {
-      return { row: row + 1, col };
+      return { row: row + 1, column };
     }
     return undefined;
   }
 
-  west(row, col) {
-    if (col > 0) {
-      return { row, col: col - 1 };
+  west(rowOrObj, col) {
+    const { row, col: column } = this.parseRowCol(rowOrObj, col);
+    if (column > 0) {
+      return { row, col: column - 1 };
     }
     return undefined;
   }
 
-  east(row, col) {
-    if (col < this.cols - 1) {
-      return { row, col: col + 1 };
+  east(rowOrObj, col) {
+    const { row, col: column } = this.parseRowCol(rowOrObj, col);
+    if (column < this.cols - 1) {
+      return { row, col: column + 1 };
     }
     return undefined;
   }
