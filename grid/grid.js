@@ -1,9 +1,21 @@
-export default class Grid {
+// Grid.js
+export class Grid {
   constructor(rowOrObj, cols) {
     const { row: rows, col: columns } = this.parseRowCol(rowOrObj, cols);
-    this.rows = rows;
-    this.cols = columns;
-    this.grid = Array.from({ length: rows }, () => Array(columns).fill(null));
+    this.rowsNum = rows;
+    this.colsNum = columns;
+    this.grid = Array.from({ length: rows }, (_, row) =>
+      Array.from({ length: columns }, (_, col) => ({
+        row,
+        col,
+        visited: false,
+        north: true,
+        south: true,
+        east: true,
+        west: true,
+        parent: null,
+      }))
+    );
   }
 
   parseRowCol(rowOrObj, col) {
@@ -16,22 +28,22 @@ export default class Grid {
   set(rowOrObj, colOrValue, value) {
     const { row, col } = this.parseRowCol(rowOrObj, colOrValue);
     const val = value !== undefined ? value : colOrValue;
-    this.grid[row][col] = val;
+    this.grid[row][col] = { ...this.grid[row][col], ...val };
   }
 
   get(rowOrObj, col) {
     const { row, col: column } = this.parseRowCol(rowOrObj, col);
-    return this.grid[row][column];
+    return this.grid[row]?.[column];
   }
 
   indexFor(rowOrObj, col) {
     const { row, col: column } = this.parseRowCol(rowOrObj, col);
-    return row * this.cols + column;
+    return row * this.colsNum + column;
   }
 
   rowColFor(index) {
-    const row = Math.floor(index / this.cols);
-    const col = index % this.cols;
+    const row = Math.floor(index / this.colsNum);
+    const col = index % this.colsNum;
     return { row, col };
   }
 
@@ -39,28 +51,28 @@ export default class Grid {
     const { row, col: column } = this.parseRowCol(rowOrObj, col);
     const neighbours = [];
     if (row > 0) {
-      neighbours.push({ row: row - 1, column }); // Check up
+      neighbours.push({ row: row - 1, col: column }); // North
     }
-    if (row < this.rows - 1) {
-      neighbours.push({ row: row + 1, column }); // Check Down
+    if (row < this.rowsNum - 1) {
+      neighbours.push({ row: row + 1, col: column }); // South
     }
     if (column > 0) {
-      neighbours.push({ row, col: column - 1 }); // Check Left
+      neighbours.push({ row, col: column - 1 }); // West
     }
-    if (column < this.cols - 1) {
-      neighbours.push({ row, col: column + 1 }); // Check Right
+    if (column < this.colsNum - 1) {
+      neighbours.push({ row, col: column + 1 }); // East
     }
     return neighbours;
   }
 
   neighbourValues(rowOrObj, col) {
     const { row, col: column } = this.parseRowCol(rowOrObj, col);
-    return this.neighbours(row, column).map(({ row, col }) => this.get(row, col));
+    return this.neighbours(row, column).map(({ row, col: neighborCol }) => this.get(row, neighborCol));
   }
 
   nextInRow(rowOrObj, col) {
     const { row, col: column } = this.parseRowCol(rowOrObj, col);
-    if (column < this.cols - 1) {
+    if (column < this.colsNum - 1) {
       return { row, col: column + 1 };
     }
     return undefined;
@@ -68,8 +80,8 @@ export default class Grid {
 
   nextInCol(rowOrObj, col) {
     const { row, col: column } = this.parseRowCol(rowOrObj, col);
-    if (row < this.rows - 1) {
-      return { row: row + 1, column };
+    if (row < this.rowsNum - 1) {
+      return { row: row + 1, col: column };
     }
     return undefined;
   }
@@ -77,15 +89,15 @@ export default class Grid {
   north(rowOrObj, col) {
     const { row, col: column } = this.parseRowCol(rowOrObj, col);
     if (row > 0) {
-      return { row: row - 1, column };
+      return { row: row - 1, col: column };
     }
     return undefined;
   }
 
   south(rowOrObj, col) {
     const { row, col: column } = this.parseRowCol(rowOrObj, col);
-    if (row < this.rows - 1) {
-      return { row: row + 1, column };
+    if (row < this.rowsNum - 1) {
+      return { row: row + 1, col: column };
     }
     return undefined;
   }
@@ -100,27 +112,27 @@ export default class Grid {
 
   east(rowOrObj, col) {
     const { row, col: column } = this.parseRowCol(rowOrObj, col);
-    if (column < this.cols - 1) {
+    if (column < this.colsNum - 1) {
       return { row, col: column + 1 };
     }
     return undefined;
   }
 
   rows() {
-    return this.rows;
+    return this.rowsNum;
   }
 
   cols() {
-    this.cols;
+    return this.colsNum;
   }
 
   size() {
-    return this.rows * this.cols;
+    return this.rowsNum * this.colsNum;
   }
 
   fill(value) {
-    for (let row = 0; row < this.rows; row++) {
-      for (let col = 0; col < this.cols; col++) {
+    for (let row = 0; row < this.rowsNum; row++) {
+      for (let col = 0; col < this.colsNum; col++) {
         this.set(row, col, value);
       }
     }
